@@ -4,6 +4,8 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 . "${SCRIPT_DIR}/lib/shflags/shflags"
 . "${SCRIPT_DIR}/lib/bashlog/log.sh"
 
+DMENU="rofi -dmenu" # ← Default to rofi
+
 # Define flags
 DEFINE_string 'engine' '' 'Preset search engine (elvi)' 'e'
 DEFINE_string 'type' '' 'Optional type passed to elvi (e.g. code, repo)' 't'
@@ -25,7 +27,7 @@ main() {
   if [ -n "$FLAGS_engine" ]; then
     engine="$FLAGS_engine"
     if echo "$elvi_list" | grep -qx "$engine"; then
-      query=$(echo "" | dmenu -p "Search $engine:")
+      query=$(echo "" | $DMENU -p "Search $engine:")
       log info "Launching: sr $engine $([ -n "$FLAGS_type" ] && echo "-t=$FLAGS_type") $query"
       sr "$engine" ${FLAGS_type:+-t="$FLAGS_type"} $query
     else
@@ -36,7 +38,7 @@ main() {
   fi
 
   # Case: generic mode via dmenu
-  input=$(echo "$elvi_list" | sed 's/$/ /' | dmenu -p "Search:")
+  input=$(echo "$elvi_list" | sed 's/$/ /' | $DMENU -p "Search:")
   [ -z "$input" ] && log info "No input; exiting" && exit 0
 
   engine=$(echo "$input" | awk '{print $1}')
